@@ -4,8 +4,20 @@ import DefaultLayout from "./components/layout/default";
 import DashboardLayout from "./components/layout/dashboard";
 import { GuestOnly } from "./components/loader/guest-onlyl";
 import { RequiredAuth } from "./components/loader/required-auth";
+import { useEffect } from "react";
 
 function App() {
+
+  useEffect(() => {
+    window.addEventListener("scroll", () => {
+      if (window.scrollY <= 0) {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }
+    });
+  }, [])
 
   return (
     <>

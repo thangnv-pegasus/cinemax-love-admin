@@ -5,6 +5,8 @@ import HeaderAdmin from "./header/header-admin";
 import { useAuthStore } from "@/stores/auth.store";
 import { logoutService } from "@/services/auth";
 import { toast } from "sonner";
+import { getMe } from "@/services/users";
+import { useEffect } from "react";
 
 const items = [
   {
@@ -30,6 +32,7 @@ const items = [
 ]
 
 export default function DashboardLayout() {
+  
   return (
      <SidebarProvider>
       <AppSidebar />
@@ -64,7 +67,7 @@ function AppSidebar() {
         <SidebarMenuButton>
           <Link to="/" className="flex items-center gap-2 text-blue-500">
             <Clapperboard className="w-4 h-4"/>
-            <span className="font-semibold text-lg">BlueDash</span>
+            <span className="font-semibold text-lg">CinemaxLove</span>
           </Link>
         </SidebarMenuButton>
       </SidebarHeader>

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth.store' // 👈 import zustand store của bạn
+import { redirect } from "react-router";
 
 const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_API_URL || 'http://localhost:2312/',
@@ -17,5 +18,18 @@ http.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 )
+
+// http.interceptors.response.use(function onFulfilled(response) {
+//     // Any status code that lie within the range of 2xx cause this function to trigger
+//     // Do something with response data
+//     return response;
+//   }, function onRejected(error) {
+//     const store = useAuthStore()
+//     if(error?.status === 401) {
+//       store.logout()
+//       redirect('/login')
+//     }
+//     return Promise.reject(error);
+// });
 
 export default http

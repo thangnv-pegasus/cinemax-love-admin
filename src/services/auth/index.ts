@@ -2,7 +2,7 @@ import http from "@/config/axios";
 
 export const loginService = async (email: string, password: string) => {
   const res = await http.post('/auth/login', { email, password });
-  
+  console.log('>>> res login >> ', res)
   return res.data;
 };
 
