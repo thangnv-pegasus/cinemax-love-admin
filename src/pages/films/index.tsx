@@ -9,14 +9,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select as SelectShad, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { Avatar } from "@/components/ui/avatar";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { Trash2, Edit, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, Edit, Plus, Search } from "lucide-react";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { getCategories } from "@/services/category";
 import type { IBaseCategory } from "@/types/category";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import Select from 'react-select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { FILM_TYPE } from "@/consts/film";
+import type { ICountry } from "@/types";
+import { getAllCountries } from "@/services/countries";
 
 const initialMovies = [
   { id: 1, title: "The Silent Sea", year: 2021, genres: ["Sci-Fi", "Drama"], rating: 7.9, poster: "https://picsum.photos/seed/1/200/300" },
@@ -31,42 +37,32 @@ const initialMovies = [
   { id: 10, title: "1917", year: 2019, genres: ["War", "Drama"], rating: 8.3, poster: "https://picsum.photos/seed/10/200/300" },
 ];
 
+interface IOptionType {
+  label: string;
+  value: string;
+}
+
+const formInitValues = { name: "", original_name: "", type: '', category_ids: [],country_id: '', thumbnail: undefined, poster: undefined,episodes: undefined, description: "", quality: "", casts: "", director: "" }
+
 export default function FilmPage() {
   const [movies, setMovies] = useState(initialMovies);
+  // const [mode, setMode] = useState<'file' | 'text'>('file')
   const [query, setQuery] = useState("");
-  const [sortBy, setSortBy] = useState("title");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ title: "", year: "", genres: "", rating: "", poster: "" });
+  const [form, setForm] = useState(formInitValues);
   const [page, setPage] = useState(1);
-  const perPage = 5;
   const [categories, setCategories] = useState<IBaseCategory[]>([])
+  const [countries, setCountries] = useState<ICountry[]>([])
 
   const fetchListCategories = async () => {
     const res = await getCategories()
     setCategories(res as IBaseCategory[])
   }
 
-  const filtered = useMemo(() => {
-    let res = [...movies];
-    if (query) {
-      const q = query.toLowerCase();
-      res = res.filter((m) => m.title.toLowerCase().includes(q) || String(m.year).includes(q));
-    }
-    
-    if (sortBy === "title") res.sort((a, b) => a.title.localeCompare(b.title));
-    if (sortBy === "year") res.sort((a, b) => b.year - a.year);
-    if (sortBy === "rating") res.sort((a, b) => b.rating - a.rating);
-    return res;
-  }, [movies, query, sortBy]);
-
-  const totalPages = Math.ceil(filtered.length / perPage);
-  const currentMovies = filtered.slice((page - 1) * perPage, page * perPage);
-
-  function openCreate() {
-    setEditing(null);
-    setForm({ title: "", year: String(new Date().getFullYear()), genres: "", rating: "", poster: "" });
-    setIsDialogOpen(true);
+  const fetchListCoutries = async () => {
+    const res = await getAllCountries()
+    setCountries(res)
   }
 
   function openEdit(movie: any) {
@@ -82,42 +78,33 @@ export default function FilmPage() {
   }
 
   function save() {
-    if (!form.title || !form.year) return alert("Vui lòng nhập tiêu đề và năm");
     const payload = {
       id: editing ? editing.id : Date.now(),
-      title: form.title,
-      year: Number(form.year),
-      genres: form.genres ? form.genres.split(",").map((s) => s.trim()).filter(Boolean) : [],
-      rating: Number(form.rating) || 0,
-      poster: form.poster || `https://picsum.photos/seed/${Math.floor(Math.random() * 1000)}/200/300`,
+      title: form.name,
+      category_ids: form.category_ids,
+      poster: form.poster,
     };
     if (editing) {
-      setMovies((prev) => prev.map((m) => (m.id === editing.id ? payload : m)));
-    } else {
-      setMovies((prev) => [payload, ...prev]);
-    }
+      // setMovies((prev) => prev.map((m) => (m.id === editing.id ? payload : m)));
+    } 
     setIsDialogOpen(false);
   }
 
-  function remove(id) {
+  function remove(id: number) {
     if (!confirm("Bạn có chắc muốn xóa phim này?")) return;
     setMovies((prev) => prev.filter((m) => m.id !== id));
   }
 
   useEffect(() => {
-    if (page > totalPages) setPage(1);
-  }, [filtered]);
-
-  useEffect(() => {
     if (!isDialogOpen) {
       setEditing(null);
-      setForm({ title: "", year: "", genres: "", rating: "", poster: "" });
+      setForm(formInitValues);
     }
   }, [isDialogOpen]);
 
   useEffect(() => {
-    fetchListCategories()
-  },[])
+    Promise.all([fetchListCategories(), fetchListCoutries()])
+  }, [])
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -131,7 +118,7 @@ export default function FilmPage() {
             <Search size={16} />
             <Input placeholder="Tìm theo tiêu đề hoặc năm..." value={query} onChange={(e) => setQuery(e.target.value)} className="w-64" />
           </div>
-          <Select>
+          <SelectShad>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Chọn thể loại phim" />
             </SelectTrigger>
@@ -144,43 +131,120 @@ export default function FilmPage() {
                 }
               </ScrollArea>
             </SelectContent>
-          </Select>
+          </SelectShad>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="default" size="sm" className="flex items-center gap-2">
                 <Plus size={14} /> Thêm phim
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{editing ? "Sửa phim" : "Thêm phim mới"}</DialogTitle>
+            <DialogContent className="p-0 gap-0">
+              <DialogHeader className="p-5 border-b-[1px] border-solid border-gray-200">
+                <DialogTitle className="text-center">{editing ? "Sửa phim" : "Thêm phim mới"}</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 mt-2">
-                <div>
-                  <Label>Tiêu đề</Label>
-                  <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+              <ScrollArea className="max-h-[60vh] overflow-y-auto p-5">
+                <div className="flex flex-col gap-y-5 mt-2">
+                  <div>
+                    <Label className="mb-2">Tiêu đề</Label>
+                    <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="mb-2">Mô tả phim</Label>
+                    <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="mb-2">Tên gốc</Label>
+                    <Input value={form.name} onChange={(e) => setForm({ ...form, original_name: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="mb-2">Chất lượng</Label>
+                    <Input value={form.quality} onChange={(e) => setForm({ ...form, quality: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="mb-2">Kiểu phim</Label>
+                    <SelectShad onValueChange={e => setForm({ ...form, type: e })}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Chọn kiểu phim" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value={String(FILM_TYPE.SERIES)}>Phim bộ</SelectItem>
+                          <SelectItem value={String(FILM_TYPE.MOVIE)}>Phim lẻ</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </SelectShad>
+                  </div>
+                  <div>
+                    <Label className="mb-2">Quốc gia</Label>
+                    <SelectShad onValueChange={e => setForm({ ...form, country_id: e })}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Chọn quốc gia" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {
+                            countries.map((item) => {
+                              return <SelectItem value={String(item.id)}>{item.name}</SelectItem>
+                            })
+                          }
+
+                        </SelectGroup>
+                      </SelectContent>
+                    </SelectShad>
+                  </div>
+                  <div>
+                    <Label className="mb-2">Diễn viên</Label>
+                    <Input value={form.casts} onChange={(e) => setForm({ ...form, casts: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="mb-2">Đạo diễn</Label>
+                    <Input value={form.director} onChange={(e) => setForm({ ...form, director: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="mb-2">Thể loại</Label>
+                    <Select<IOptionType, true>
+                      defaultValue={[]}
+                      isMulti
+                      name="category_ids"
+                      options={(categories ?? []).map(item => ({ label: item.name, value: String(item.id) }))}
+                      className="basic-multi-select"
+                      classNamePrefix="select"
+                    />
+                  </div>
+                  <Tabs defaultValue="poster-link">
+                    <TabsList>
+                      <TabsTrigger value="poster-link">Poster url</TabsTrigger>
+                      <TabsTrigger value="poster-file">Poster file</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="poster-link">
+                      <Input type="text" placeholder="Nhập đường dẫn" value={form.poster} />
+                    </TabsContent>
+                    <TabsContent value="poster-file">
+                      <Input type="file" className="cursor-pointer" placeholder="Chọn file poster" value={form.poster} />
+                    </TabsContent>
+                  </Tabs>
+                  <Tabs defaultValue="thumbnail_url">
+                    <TabsList>
+                      <TabsTrigger value="thumbnail_url">Thumbnail url</TabsTrigger>
+                      <TabsTrigger value="thumbnail_file">Thumbnail file</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="thumbnail_url">
+                      <Input type="text" placeholder="Nhập đường dẫn" value={form.thumbnail} onChange={e => setForm({...form, thumbnail: e.target.value})}/>
+                    </TabsContent>
+                    <TabsContent value="thumbnail_file">
+                      <Input type="file" className="cursor-pointer" placeholder="Chọn file thumbnail" value={form.thumbnail} onChange={e => setForm({...form, thumbnail: e.target.files})}/>
+                    </TabsContent>
+                  </Tabs>
+                  <div>
+                    <Label className="mb-2">Tập phim</Label>
+                    <Input value={form.episodes} onChange={(e) => setForm({ ...form, episodes: e.target.value })} multiple/>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Hủy</Button>
+                    <Button onClick={save}>{editing ? "Lưu" : "Tạo"}</Button>
+                  </div>
                 </div>
-                <div>
-                  <Label>Năm</Label>
-                  <Input type="number" value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} />
-                </div>
-                <div>
-                  <Label>Thể loại (phân tách bằng dấu phẩy)</Label>
-                  <Input value={form.genres} onChange={(e) => setForm({ ...form, genres: e.target.value })} />
-                </div>
-                <div>
-                  <Label>Đánh giá (0 - 10)</Label>
-                  <Input type="number" value={form.rating} onChange={(e) => setForm({ ...form, rating: e.target.value })} />
-                </div>
-                <div>
-                  <Label>URL poster (tùy chọn)</Label>
-                  <Input value={form.poster} onChange={(e) => setForm({ ...form, poster: e.target.value })} />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Hủy</Button>
-                  <Button onClick={save}>{editing ? "Lưu" : "Tạo"}</Button>
-                </div>
-              </div>
+              </ScrollArea>
             </DialogContent>
           </Dialog>
         </div>
@@ -188,7 +252,7 @@ export default function FilmPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Danh sách phim ({filtered.length})</CardTitle>
+          <CardTitle>Danh sách phim </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -204,7 +268,7 @@ export default function FilmPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {currentMovies.map((m) => (
+                {movies.map((m) => (
                   <TableRow key={m.id} className="align-top">
                     <TableCell><Avatar><img src={m.poster} alt={m.title} className="object-cover w-16 h-24 rounded" /></Avatar></TableCell>
                     <TableCell className="font-medium">{m.title}</TableCell>
@@ -223,34 +287,6 @@ export default function FilmPage() {
             </Table>
           </div>
 
-          {filtered.length === 0 && <p className="text-center py-8 text-sm text-muted-foreground">Không tìm thấy phim nào.</p>}
-
-          {filtered.length > 0 && (
-            <Pagination className="mt-10">
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious href="#" />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">1</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#" isActive>
-                    2
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">3</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationEllipsis />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext href="#" />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          )}
         </CardContent>
       </Card>
     </div>

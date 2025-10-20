@@ -4,3 +4,9 @@ export interface IPaginationResponse<T> {
   limit: number;
   items: T[]
 }
+
+export interface ICountry {
+  id: number;
+  name: string;
+  slug: string;
+}

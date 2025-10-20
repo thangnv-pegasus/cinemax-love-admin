@@ -81,6 +81,7 @@ export default function UsersPage() {
           toast.success('Sửa người dùng thành công!')
           setIsDialogOpen(false);
           setPage(1)
+          await getListUsers();
         }else {
           toast.error('Sửa người dùng thất bại!')
         }
@@ -117,6 +118,7 @@ export default function UsersPage() {
       if(!!res) {
         toast.success('Xoá người dùng thành công!')
         setPage(1)
+        await getListUsers();
       }else {
         toast.error('xoá người dùng thất bại!')
       }
@@ -160,11 +162,6 @@ export default function UsersPage() {
           </Select>
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="default" size="sm" className="flex items-center gap-2" onClick={openCreate}>
-                <Plus size={14} /> Thêm người dùng
-              </Button>
-            </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{editing ? "Sửa người dùng" : "Thêm người dùng mới"}</DialogTitle>
@@ -217,7 +214,7 @@ export default function UsersPage() {
               </TableHeader>
               {
                 !isLoading && <TableBody>
-                {users.map((u) => (
+                {users?.map((u) => (
                   <TableRow key={u.id}>
                     <TableCell>
                       <Avatar><AvatarFallback>{u.name[0]}</AvatarFallback></Avatar>
