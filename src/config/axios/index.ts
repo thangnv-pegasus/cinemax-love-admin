@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth.store' // 👈 import zustand store của bạn
-import { redirect } from "react-router";
 
 const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_API_URL || 'http://localhost:2312/',
