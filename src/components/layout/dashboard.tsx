@@ -5,14 +5,17 @@ import HeaderAdmin from "./header/header-admin";
 import { useAuthStore } from "@/stores/auth.store";
 import { logoutService } from "@/services/auth";
 import { toast } from "sonner";
-import { getMe } from "@/services/users";
-import { useEffect } from "react";
 
 const items = [
   {
     title: "Dashboard",
     url: "/dashboard",
     icon: Home,
+  },
+  {
+    title: "Quản lý thể loại phim",
+    url: "/categories",
+    icon: MonitorPlay,
   },
   {
     title: "Quản lý phim",

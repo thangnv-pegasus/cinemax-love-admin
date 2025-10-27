@@ -50,6 +50,7 @@ export default function FilmPage() {
   const onUpdate = async (id: number, values: any) => {
     try {
       const res = await updateFilm(id, values)
+      setEditingFilm(null)
 
       console.log(res)
     }catch(err) {

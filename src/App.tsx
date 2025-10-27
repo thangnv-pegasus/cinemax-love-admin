@@ -5,6 +5,7 @@ import DashboardLayout from "./components/layout/dashboard";
 import { GuestOnly } from "./components/loader/guest-onlyl";
 import { RequiredAuth } from "./components/loader/required-auth";
 import { useEffect } from "react";
+import { Toaster } from "sonner";
 
 function App() {
 
@@ -45,6 +46,7 @@ function App() {
           </Route>
         </Route>
       </Routes>
+      <Toaster position="top-center" theme="light" richColors />
     </>
   )
 }

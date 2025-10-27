@@ -3,6 +3,7 @@ import DashboardPage from "../pages/dashboard";
 import LoginPage from "../pages/login";
 import UsersPage from "@/pages/users";
 import HistoryPage from "@/pages/histories";
+import CategoriesPage from "@/pages/categories";
 
 export const publicRoutes = [
   {
@@ -31,6 +32,10 @@ export const privateRoutes = [
   {
     path: '/histories',
     component: HistoryPage
+  },
+  {
+    path: '/categories',
+    component: CategoriesPage
   }
   // {
   //   path: '/*',

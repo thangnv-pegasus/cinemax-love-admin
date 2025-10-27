@@ -3,3 +3,9 @@ export interface IBaseCategory {
   name: string;
   slug: string;
 }
+
+export interface IcategoryList extends IBaseCategory {
+  _count: {
+    films: number
+  }
+}

@@ -52,3 +52,14 @@ export const deleteFilm = async (filmId: number) => {
     return false;
   }
 }
+
+export const getFilmsHistories = async (page = 1, limit = 10, search = '') => {
+  try {
+    const res = await http.get(`film-history?page=${page}&limit=${limit}&search=${search}`)
+
+    return res.data
+  }catch(err) {
+    console.error('get films hitories err >>> ', err)
+    return null
+  }
+}
