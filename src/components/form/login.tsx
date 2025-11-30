@@ -26,6 +26,7 @@ export default function LoginForm() {
   })
   const login = useAuthStore(state => state.login)
 
+  // hàm call api đăng nhập
   const onSubmit = async (data: {email: string, password: string} ) => {
     try {
       const res = await loginService(data.email, data.password);

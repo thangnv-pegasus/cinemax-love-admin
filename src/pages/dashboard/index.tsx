@@ -57,7 +57,7 @@ export default function DashboardContent() {
   };
 
   return (
-    <div className="flex-1 p-6 bg-gray-100">
+    <div className="flex-1 p-6 bg-gray-100 h-full">
       <h2 className="text-2xl font-semibold mb-4">Welcome to the Dashboard</h2>
       {/* Các biểu đồ */}
       <div className="grid grid-cols-2 gap-6 mb-5">
@@ -74,10 +74,10 @@ export default function DashboardContent() {
         </div>
       </div>
         {/* Biểu đồ Pie */}
-        <div className="bg-white p-4 rounded-lg shadow-md w-3/5 mx-auto">
+        {/* <div className="bg-white p-4 rounded-lg shadow-md w-3/5 mx-auto">
           <h3 className="text-xl font-semibold mb-2">Phân bổ hệ điều hành người dùng</h3>
           <Pie data={dataPie} />
-        </div>
+        </div> */}
     </div>
   );
 };

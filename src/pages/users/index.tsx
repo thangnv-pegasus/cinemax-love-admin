@@ -49,21 +49,16 @@ export default function UsersPage() {
     }
   }, [isDialogOpen]);
 
-  const getListUsers = async () => {
+  // hàm call api lấy danh sách users
+  const getListUsers = async (search = '') => {
     setIsLoading(true)
-    const res: IPaginationResponse<IUserInfo> = await getUsers(page, 12, '')
-
+    const res: IPaginationResponse<IUserInfo> = await getUsers(page, 12, search)
     setUsers(res.items)
     setTotalPage(Math.ceil(res.total / res.limit) || 1)
     setIsLoading(false)
   }
 
-  function openCreate() {
-    setEditing(undefined);
-    setForm({ name: "", email: "", role: String(ROLE_USER.user) });
-    setIsDialogOpen(true);
-  }
-
+  // hàm call api sửa users
   function openEdit(user: IUserInfo) {
     setEditing(user);
     setForm({ name: user.name, email: user.email, role: String(user.role) });
@@ -110,6 +105,7 @@ export default function UsersPage() {
     }
   }
 
+  // hàm call api xóa user
   async function remove(id: number) {
     if (!confirm("Bạn có chắc muốn xóa người dùng này?")) return;
     try {
@@ -128,8 +124,8 @@ export default function UsersPage() {
   }
 
   useEffect(() => {
-    getListUsers()
-  },[page])
+    getListUsers(query)
+  },[page, query])
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -140,7 +136,7 @@ export default function UsersPage() {
         </div>
 
         <div className="flex gap-3">
-          <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2">
             <Search size={16} />
             <Input
               placeholder="Tìm theo tên hoặc email..."
@@ -150,7 +146,7 @@ export default function UsersPage() {
             />
           </div>
 
-          <Select onValueChange={(v) => setRoleFilter(v)}>
+          {/* <Select onValueChange={(v) => setRoleFilter(v)}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Lọc theo vai trò" />
             </SelectTrigger>
@@ -159,7 +155,7 @@ export default function UsersPage() {
               <SelectItem value={String(ROLE_USER.admin)}>Admin</SelectItem>
               <SelectItem value={String(ROLE_USER.user)}>User</SelectItem>
             </SelectContent>
-          </Select>
+          </Select> */}
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent>

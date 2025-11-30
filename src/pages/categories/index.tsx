@@ -36,6 +36,7 @@ export default function CategoriesPage() {
     total: 1
   })
 
+  // hàm handleSubmit có tác dụng call api khi người dùng nhập form thêm mới hoặc sửa thể loại phim
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -67,11 +68,12 @@ export default function CategoriesPage() {
     setEditingCategory(undefined);
   };
 
+  // call đến api xóa thể loại, nếu xóa thành công hay thất bại => thông báo ra màn hình
   const handleDelete = async (id: number) => {
     try {
-      const res = await deleteCategory(id)
+      if (!confirm('Bạn có chắc muốn xóa thể loại này?')) return;
+      await deleteCategory(id)
       await fetchListCategories(1)
-      console.log('>>> res >>> ', res)
 
       toast.success('Xoá thể loại thành công!')
     } catch (err) {
@@ -81,8 +83,9 @@ export default function CategoriesPage() {
     }
   };
 
+  // hàm call api lấy danh sách thể loại phim
   const fetchListCategories = async (page = 1) => {
-    const res = await getCategoriesPagination(page)
+    const res = await getCategoriesPagination(page, 12)
 
     setCategories(res?.data || [])
     setMeta(res?.meta || {
@@ -94,7 +97,7 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     fetchListCategories()
-  }, [])
+  }, [search])
 
   useEffect(() => {
     if (!open && editingCategory) {
@@ -139,7 +142,7 @@ export default function CategoriesPage() {
 
       <Card>
         <CardContent className="p-4 space-y-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 hidden">
             <Search className="w-4 h-4 text-gray-500" />
             <Input
               placeholder="Tìm kiếm thể loại..."

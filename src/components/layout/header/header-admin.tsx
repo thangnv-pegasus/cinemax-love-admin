@@ -39,7 +39,7 @@ export default function HeaderAdmin() {
         <Input
           type="text"
           placeholder="Tìm kiếm..."
-          className="w-full border-blue-100 focus-visible:ring-blue-500"
+          className="w-full border-blue-100 focus-visible:ring-blue-500 hidden"
         />
       </div>
 

@@ -17,6 +17,7 @@ export default function HistoryPage() {
     total: 1
   })
 
+  // hàm call api lấy danh sách lịch sử xem phim
   const fetchFilmHistories = async (page = 1, limit = 12, search = '') => {
     const res = await getFilmsHistories(page, limit, search)
 
@@ -25,8 +26,8 @@ export default function HistoryPage() {
   }
 
   useEffect(() => {
-    fetchFilmHistories()
-  }, [])
+    fetchFilmHistories(1, 12, search)
+  }, [search])
 
 
   return (
@@ -36,7 +37,7 @@ export default function HistoryPage() {
           <CardTitle>Lịch sử xem của người dùng</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-x-2 items-center mb-4">
+          <div className="flex gap-x-2 items-center mb-4 hidden">
             <Input
               placeholder="Tìm theo tên user hoặc phim..."
               value={search}

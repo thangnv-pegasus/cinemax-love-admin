@@ -37,6 +37,7 @@ const filmSchema = z.object({
   country_id: z.string().min(1, 'Chọn quốc gia'),
   casts: z.string().optional(),
   director: z.string().optional(),
+  time: z.string().optional(),
   category_ids: z.array(z.string()).nonempty('Chọn ít nhất 1 thể loại'),
   poster: z.any().optional(),
   thumbnail: z.any().optional(),
@@ -75,6 +76,7 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
       quality: '',
       type: '',
       country_id: '',
+      time: '',
       casts: '',
       director: '',
       category_ids: [],
@@ -101,6 +103,7 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
         fd.append('description', values.description || '');
         fd.append('original_name', values.original_name || '');
         fd.append('quality', values.quality || '');
+        fd.append('time', values.time || '');
         fd.append('type', String(values.type || ''));
         fd.append('country_id', String(values.country_id || ''));
         fd.append('casts', values.casts || '');
@@ -128,18 +131,18 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
         // episodes: send appropriately
         (values.episodes || []).forEach((ep, idx) => {
           if (ep.source_type === 'file' && ep.source instanceof File) {
-            fd.append(`episodes[${idx}][source_file]`, ep.source);
-            fd.append(`episodes[${idx}][source_type]`, 'file');
+            fd.append(`episodes`, ep.source);
+            // fd.append(`episodes[][source_type]`, 'file');
           } else {
-            fd.append(`episodes[${idx}][source]`, ep.source || '');
-            fd.append(`episodes[${idx}][source_type]`, ep.source_type);
+            fd.append(`episodes[][source]`, ep.source || '');
+            fd.append(`episodes[][source_type]`, ep.source_type);
           }
         });
-
+        let res = null;
         if (editingFilm) {
-          await onUpdate(editingFilm.id, fd);
+          res = await onUpdate(editingFilm.id, fd);
         } else {
-          await onCreate(fd);
+          res = await onCreate(fd);
         }
       } else {
         // Không có file -> gửi JSON object, giữ url cũ nếu không thay đổi
@@ -149,6 +152,7 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
           original_name: values.original_name,
           quality: values.quality,
           type: values.type,
+          time: values.time,
           country_id: values.country_id,
           casts: values.casts,
           director: values.director,
@@ -173,6 +177,7 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
       setIsOpen(false);
       reloadFilms();
     } catch (err) {
+      console.log('>>> error >>> ')
       console.error(err);
       toast.error('Lưu phim thất bại!');
     }
@@ -188,6 +193,7 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
         original_name: editingFilm.original_name || '',
         quality: editingFilm.quality || '',
         type: String(editingFilm.type ?? ''),
+        time: editingFilm.time || '',
         country_id: String(editingFilm.country_film?.[0]?.country?.id ?? ''),
         casts: editingFilm.casts || '',
         director: editingFilm.director || '',
@@ -223,6 +229,7 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
       quality: '',
       type: '',
       country_id: '',
+      time: '',
       casts: '',
       director: '',
       category_ids: [],
@@ -246,7 +253,7 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
       </DialogTrigger>
       <DialogContent className="p-0 gap-0">
         <DialogHeader className="p-5 border-b border-gray-200">
-          <DialogTitle className="text-center">Thêm phim mới</DialogTitle>
+          <DialogTitle className="text-center">{editingFilm ? 'Sửa phim' : 'Thêm phim mới'}</DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="max-h-[70vh] overflow-y-auto p-5">
@@ -282,6 +289,17 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
                   <FormItem>
                     <FormLabel>Tên gốc</FormLabel>
                     <FormControl><Input placeholder="Nhập tên gốc" {...field} /></FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Thời lượng</FormLabel>
+                    <FormControl><Input placeholder="Nhập thời lượng " {...field} /></FormControl>
                   </FormItem>
                 )}
               />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import {
   Card, CardHeader, CardContent, CardTitle,
 } from '@/components/ui/card';
@@ -26,18 +26,21 @@ export default function FilmPage() {
   const [meta, setMeta] = useState({ total: 1, page: 1, last_page: 1 });
   const [editingFilm, setEditingFilm] = useState<any | null>(null);
 
+  // hàm call api lấy danh sách thể loại phim
   const fetchListCategories = async () => {
     const res = await getCategories();
     setCategories(res as IBaseCategory[]);
   };
 
+  // hàm call api lấy danh sách nước
   const fetchListCountries = async () => {
     const res = await getAllCountries();
     setCountries(res);
   };
 
-  const fetchListFilms = async (page = 1) => {
-    const res = await getFilmPagination(page);
+  // hàm call api lấy danh sách phim
+  const fetchListFilms = async (page = 1, search = '') => {
+    const res = await getFilmPagination(page, 12, search);
     setFilms(res?.data || []);
     setMeta(res?.meta || { total: 1, page: 1, last_page: 1 });
   };
@@ -47,24 +50,28 @@ export default function FilmPage() {
     setEditingFilm(film);
   }
 
+  // hàm call api update thông tin phim
   const onUpdate = async (id: number, values: any) => {
     try {
       const res = await updateFilm(id, values)
       setEditingFilm(null)
 
-      console.log(res)
+      if(!res) {
+        toast.error('Sửa phim không thành công!')
+        return
+      }
     }catch(err) {
       toast.error('Sửa phim không thành công!')
     }
   }
 
+  // hàm call api xóa phim
   async function handleDelete(id: number) {
     if (!confirm('Bạn có chắc muốn xóa phim này?')) return;
     // TODO: gọi API xóa phim
     try {
-      const res = await deleteFilm(id)
+      await deleteFilm(id)
 
-      console.log('>>> res >>> ', res)
       await fetchListFilms(1)
       toast.success('Xoá phim thành công!')
     } catch (err) {
@@ -72,15 +79,26 @@ export default function FilmPage() {
     }
   }
 
+  // hàm call api thêm phim mới
   const createFilm = async (payload: any) => {
-    const res = await postNewFilm(payload)
-
-    console.log(">>> res >>>>", res)
+    try {
+      const res = await postNewFilm(payload)
+      if(!res || res.status === 500 || res.status === 400) {
+        toast.error('Thêm phim thất bại')
+        return;
+      }
+    }catch(err) {
+      toast.error('Thêm phim không thành công!')
+    }
   }
 
   useEffect(() => {
-    Promise.all([fetchListCategories(), fetchListCountries(), fetchListFilms()]);
+    Promise.all([fetchListCategories(), fetchListCountries()]);
   }, []);
+
+  useEffect(() => {
+    fetchListFilms(1, query);
+  }, [query]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
