@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from "react-router";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
-import { Clapperboard, History, Home, LogOut, MonitorPlay, Users } from "lucide-react"
+import { Clapperboard, History, Home, LogOut, MessageSquareText, MonitorPlay, Users } from "lucide-react"
 import HeaderAdmin from "./header/header-admin";
 import { useAuthStore } from "@/stores/auth.store";
 import { logoutService } from "@/services/auth";
@@ -31,6 +31,11 @@ const items = [
     title: "Lịch sử xem phim",
     url: "/histories",
     icon: History,
+  },
+  {
+    title: "Quản lý bình luận",
+    url: "/comments",
+    icon: MessageSquareText,
   }
 ]
 

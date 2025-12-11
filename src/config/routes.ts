@@ -4,6 +4,7 @@ import LoginPage from "../pages/login";
 import UsersPage from "@/pages/users";
 import HistoryPage from "@/pages/histories";
 import CategoriesPage from "@/pages/categories";
+import CommentsPage from "@/pages/comments";
 
 export const publicRoutes = [
   {
@@ -36,6 +37,10 @@ export const privateRoutes = [
   {
     path: '/categories',
     component: CategoriesPage
+  },
+  {
+    path: '/comments',
+    component: CommentsPage
   }
   // {
   //   path: '/*',
