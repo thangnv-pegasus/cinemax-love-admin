@@ -136,7 +136,7 @@ export default function UsersPage() {
         </div>
 
         <div className="flex gap-3">
-          <div className="hidden items-center gap-2">
+          <div className="flex items-center gap-2">
             <Search size={16} />
             <Input
               placeholder="Tìm theo tên hoặc email..."
