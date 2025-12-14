@@ -60,6 +60,7 @@ export default function FilmPage() {
         toast.error('Sửa phim không thành công!')
         return
       }
+      toast.success('Sửa phim thành công!')
     }catch(err) {
       toast.error('Sửa phim không thành công!')
     }
@@ -83,10 +84,13 @@ export default function FilmPage() {
   const createFilm = async (payload: any) => {
     try {
       const res = await postNewFilm(payload)
+      console.log('>>> create film res >>> ', res)
       if(!res || res.status === 500 || res.status === 400) {
         toast.error('Thêm phim thất bại')
         return;
       }
+
+      toast.success('Thêm phim thành công!')
     }catch(err) {
       toast.error('Thêm phim không thành công!')
     }

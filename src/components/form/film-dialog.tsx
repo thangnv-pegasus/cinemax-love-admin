@@ -67,6 +67,7 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
   const [thumbPreview, setThumbPreview] = useState<string | null>(null);
   const [posterMode, setPosterMode] = useState<'link' | 'file'>('link');
   const [thumbMode, setThumbMode] = useState<'link' | 'file'>('link');
+  const [isLoading, setIsLoading] = useState(false);
   const form = useForm<FilmFormValues>({
     resolver: zodResolver(filmSchema),
     defaultValues: {
@@ -92,12 +93,15 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
 
   // ✅ Handle submit
   const onSubmit = async (values: FilmFormValues) => {
+    setIsLoading(true);
+
     try {
       // Nếu có file trong poster / thumbnail thì dùng FormData
       const isPosterFile = values.poster && typeof values.poster !== 'string' && values.poster instanceof File;
       const isThumbFile = values.thumbnail && typeof values.thumbnail !== 'string' && values.thumbnail instanceof File;
+      const isFilmFile = values.episodes?.some((ep) => ep.source_type === 'file' && ep.source instanceof File);
 
-      if (isPosterFile || isThumbFile) {
+      if (isPosterFile || isThumbFile || isFilmFile) {
         const fd = new FormData();
         fd.append('name', values.name);
         fd.append('description', values.description || '');
@@ -129,13 +133,18 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
         }
 
         // episodes: send appropriately
+        console.log('>>> is editting >>> ', editingFilm);
         (values.episodes || []).forEach((ep, idx) => {
           if (ep.source_type === 'file' && ep.source instanceof File) {
-            fd.append(`episodes`, ep.source);
+            // if (editingFilm) {
+              fd.append('episodes_files', ep.source)
+            // } else {
+            //   fd.append(`episodes`, ep.source);
+            // }
             // fd.append(`episodes[][source_type]`, 'file');
           } else {
-            fd.append(`episodes[][source]`, ep.source || '');
-            fd.append(`episodes[][source_type]`, ep.source_type);
+            fd.append(`episodes[${idx}][source]`, ep.source || '');
+            fd.append(`episodes[${idx}][source_type]`, ep.source_type);
           }
         });
         let res = null;
@@ -159,10 +168,12 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
           category_ids: values.category_ids || [],
           poster: typeof values.poster === 'string' ? values.poster : editingFilm?.poster_url,
           thumbnail: typeof values.thumbnail === 'string' ? values.thumbnail : editingFilm?.thumb_url,
-          episodes: (values.episodes || []).map((ep) => ({
-            source_type: ep.source_type,
-            source: ep.source,
-          })),
+          episodes: (values.episodes || []).filter((item) => item.source_type === 'url').map((ep) => {
+            return {
+              source_type: ep.source_type,
+              source: ep.source,
+            }
+          }),
         };
 
         if (editingFilm) {
@@ -172,14 +183,13 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
         }
       }
 
-      toast.success('Lưu phim thành công!');
       form.reset()
       setIsOpen(false);
       reloadFilms();
     } catch (err) {
-      console.log('>>> error >>> ')
-      console.error(err);
-      toast.error('Lưu phim thất bại!');
+      console.error('film dialog err >>> ', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -221,28 +231,28 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
   }, [editingFilm]);
 
   useEffect(() => {
-  if (!isOpen) {
-    form.reset({
-      name: '',
-      description: '',
-      original_name: '',
-      quality: '',
-      type: '',
-      country_id: '',
-      time: '',
-      casts: '',
-      director: '',
-      category_ids: [],
-      poster: undefined,
-      thumbnail: undefined,
-      episodes: [],
-    });
-    setPosterPreview(null);
-    setThumbPreview(null);
-    setPosterMode('link');
-    setThumbMode('link');
-  }
-}, [isOpen, form]);
+    if (!isOpen) {
+      form.reset({
+        name: '',
+        description: '',
+        original_name: '',
+        quality: '',
+        type: '',
+        country_id: '',
+        time: '',
+        casts: '',
+        director: '',
+        category_ids: [],
+        poster: undefined,
+        thumbnail: undefined,
+        episodes: [],
+      });
+      setPosterPreview(null);
+      setThumbPreview(null);
+      setPosterMode('link');
+      setThumbMode('link');
+    }
+  }, [isOpen, form]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -572,7 +582,7 @@ export default function FilmFormDialog({ categories = [], countries = [], onCrea
               </div>
               <div className="flex justify-end gap-2 pt-3">
                 <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>Hủy</Button>
-                <Button type="submit">Tạo</Button>
+                <Button type="submit" disabled={isLoading}>{isLoading ? 'loading...' : 'Tạo'}</Button>
               </div>
             </form>
           </Form>

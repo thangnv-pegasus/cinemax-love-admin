@@ -23,7 +23,7 @@ export const postNewFilm = async (payload: any) => {
     return res.data
   } catch (err) {
     console.error('>>> upload film err >>> ', err)
-    return null;
+    throw err;
   }
 }
 
